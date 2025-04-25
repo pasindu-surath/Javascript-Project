@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buget Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap"
+      rel="stylesheet">
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <h1>Buget Tracker</h1>
+        <button class="help-btn" id="helpBtn">?</button>
+      </div>
+      <div class="help-content" id="helpContent">
+        <h3>Welcome to the Vanilla JS Challenge!</h3>
+        <p>Your mission is to find and fix bugs in this website's code to create
+          the best version possible.</p>
+        <ul>
+          <li><strong>Find the bugs:</strong> Look for errors in HTML structure,
+            CSS styling, and JavaScript functionality.</li>
+          <li><strong>Fix the issues:</strong> Correct any problems you find to
+            improve the website.</li>
+          <li><strong>How to find bugs:</strong> As a start, try adding a new
+            transaction and check the console for any error. Fix the error in
+            the console if any. Then, try the other functionalities with
+            different inputs to find bugs if any. Further you can look in the
+            Github Issues section to discover more issues in the code.</li>
+          <li class="important"><strong>Important:</strong> Most of the bugs can
+            be fixed by minor adjustments by changing or adding small code
+            snippets. Always try to avoid changing or replacing the whole
+            structure of the code or whole functions at once.</li>
+        </ul>
+        <p>Good luck, and have fun debugging!</p>
+        <button class="btn" id="closeHelp">Got it!</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="dashboard">
+        <div class="balance-container">
+          <h2>Your Balance</h2>
+          <h2 id="balance">Rs 0.00</h2>
+
+          <div class="income-expense-container">
+            <div>
+              <h3>Income</h3>
+              <p id="income" class="money plus">+Rs 0.00</p>
+            </div>
+            <div>
+              <h3>Expense</h3>
+              <p id="expense" class="money minus">-Rs 0.00</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="analysis-container">
+          <h3>Spending Analysis</h3>
+          <div id="chart-container">
+            <div id="chart"></div>
+          </div>
+          <button id="generate-report-btn" class="btn">Generate
+            Report</button>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="section-container">
+          <div class="add-transaction">
+            <h3>Add New Transaction</h3>
+            <form id="transaction-form">
+              <div class="form-row">
+                <div class="form-control">
+                  <label for="description">Description</label>
+                  <input type="text" id="description"
+                    placeholder="Enter description...">
+                </div>
+                <div class="form-control">
+                  <label for="amount">Amount</label>
+                  <input type="text" id="amount"
+                    placeholder="(- expense, + income)">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-control">
+                  <label for="category">Category</label>
+                  <select id="category">
+                    <option value="Food">Food</option>
+                    <option
+                      value="Transportation">Transportation</option>
+                    <option value="Housing">Housing</option>
+                    <option
+                      value="Utilities">Utilities</option>
+                    <option
+                      value="Entertainment">Entertainment</option>
+                    <option value="Income">Income</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-control">
+                  <label for="date">Date</label>
+                  <input type="date" id="date">
+                </div>
+              </div>
+              <div class="button-group">
+                <button id="add-transaction" class="btn" type="submit">Add
+                  Transaction</button>
+                <button id="add-category-btn" class="btn"
+                  type="button">Add Category</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Category Modal -->
+        <div class="modal" id="category-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Manage Categories</h3>
+              <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="category-list" id="category-list">
+              <!-- Categories will be listed here -->
+            </div>
+            <div class="add-category-form">
+              <div class="form-control">
+                <label for="new-category">New Category</label>
+                <input type="text" id="new-category"
+                  placeholder="Enter category name...">
+              </div>
+              <button id="save-category-btn" class="btn">Add Category</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-container">
+          <div class="filters-tabs">
+            <div class="tabs">
+              <button class="tab-btn active"
+                data-tab="transactions">Transactions</button>
+            </div>
+
+            <div class="tab-content active" id="transactions-tab">
+              <h3>Transaction History</h3>
+              <ul id="transaction-list" class="list">
+              </ul>
+            </div>
+
+            <div class="tab-content" id="goals-tab">
+              <h3>Savings Goals</h3>
+              <div class="goals-list" id="goals-list">
+              </div>
+              <div class="add-goal-form">
+                <div class="form-row">
+                  <div class="form-control">
+                    <label for="goal-name">Goal Name</label>
+                    <input type="text" id="goal-name"
+                      placeholder="Vacation, New Car, etc.">
+                  </div>
+                  <div class="form-control">
+                    <label for="goal-amount">Target Amount</label>
+                    <input type="number" id="goal-amount" placeholder="5000">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-control">
+                    <label for="goal-date">Target Date</label>
+                    <input type="date" id="goal-date">
+                  </div>
+                  <div class="form-control">
+                    <label for="initial-amount">Initial Amount</label>
+                    <input type="number" id="initial-amount" placeholder="0"
+                      value="0">
+                  </div>
+                </div>
+                <button id="add-goal-btn" class="btn">Add Goal</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
