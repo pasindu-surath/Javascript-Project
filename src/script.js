@@ -61,7 +61,6 @@ function addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl) {
   const category = categoryEl.value;
   const date = dateEl.value;
 
-  // Validate inputs
   if (!description) {
     alert("Please enter a description");
     return;
@@ -76,20 +75,20 @@ function addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl) {
   }
 
   const newTransaction = {
-    id: generateID(), 
+    id: generateID(),
     description,
     amount,
     category,
     date,
   };
 
-  transactions.push(newTransaction); 
+  transactions.push(newTransaction);
   updateLocalStorage();
   descriptionEl.value = "";
   amountEl.value = "";
-  dateEl.valueAsDate = new Date(); 
-  categoryEl.value = categories[0] || "Other"; 
-  init(); 
+  dateEl.valueAsDate = new Date();
+  categoryEl.value = categories[0] || "Other";
+  init(); // Calls updateValues()
 }
 
 // Generate unique ID
@@ -110,24 +109,33 @@ function removeTransaction(id) {
 }
 
 // Update values
+
+// Update values
 function updateValues(balanceEl, incomeEl, expenseEl) {
+  if (!balanceEl || !incomeEl || !expenseEl) {
+    console.error("One or more DOM elements are missing");
+    return;
+  }
+
   const amounts = transactions.map((transaction) => transaction.amount);
 
-  const total = amounts.reduce((acc, amount) => {
-    return (acc = amount);
-  }, 0);
+  const total = amounts.length
+    ? amounts.reduce((acc, amount) => acc + amount, 0).toFixed(2)
+    : "0.00";
 
   const income = amounts
     .filter((amount) => amount > 0)
-    .reduce((acc, amount) => acc + amount, 0);
+    .reduce((acc, amount) => acc + amount, 0, 0)
+    .toFixed(2);
 
   const expense = amounts
     .filter((amount) => amount < 0)
-    .reduce((acc, amount) => acc - amount, 0);
+    .reduce((acc, amount) => acc + amount, 0, 0)
+    .toFixed(2);
 
-  balanceEl.textContent = `Rs ${total}`;
-  incomeEl.textContent = `+Rs ${income}`;
-  expenseEl.textContent = `-Rs ${Math.abs(expense)}`;
+  balanceEl.textContent = `Rs ${parseFloat(total).toFixed(2)}`;
+  incomeEl.textContent = `+Rs ${parseFloat(income).toFixed(2)}`;
+  expenseEl.textContent = `-Rs ${Math.abs(parseFloat(expense)).toFixed(2)}`;
 }
 
 // Add transactions to DOM
