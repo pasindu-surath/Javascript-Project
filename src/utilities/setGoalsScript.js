@@ -59,19 +59,15 @@ function updateGoalsList() {
         <div class="goal-title">${goal.name}</div>
         <div class="goal-actions">
           <button class="edit-goal" onclick="editGoal(${goal.id})">Edit</button>
-          <button class="delete-goal" onclick="deleteGoal(${
-            goal.id
-          })">Delete</button>
-          <button class="contribute" onclick="contributeToGoal(${
-            goal.id
-          })">Add Funds</button>
+          <button class="delete-goal" onclick="deleteGoal(${goal.id})">Delete</button>
+          <button class="contribute" onclick="contributeToGoal(${goal.id})">Add Funds</button>
         </div>
       </div>
       <div class="goal-details">
-        <div>Target: Rs. ${goal.targetAmount.toFixed(
+        <div>Target: Rs ${goal.targetAmount.toFixed(
           2
-        )} | Current: Rs. ${goal.currentAmount.toFixed(2)}</div>
-        <div>Remaining: Rs. ${remaining.toFixed(2)} | Target Date: ${formatDate(
+        )} | Current: Rs ${goal.currentAmount.toFixed(2)}</div>
+        <div>Remaining: Rs ${remaining.toFixed(2)} | Target Date: ${formatDate(
       goal.targetDate
     )}</div>
         <div>${
@@ -85,7 +81,7 @@ function updateGoalsList() {
         <span>${progress.toFixed(1)}% complete</span>
         <span>${
           daysLeft > 0
-            ? `Need Rs. ${(remaining / daysLeft).toFixed(2)}/day to reach goal`
+            ? `Need Rs ${(remaining / daysLeft).toFixed(2)}/day to reach goal`
             : "Goal date passed"
         }</span>
       </div>
@@ -104,12 +100,11 @@ function deleteGoal(id) {
   }
 }
 
-// Edit goal modal
+// Edit goal
 function editGoal(id) {
   const goal = goals.find((g) => g.id === id);
   if (!goal) return;
 
-  // For simplicity, use prompt - in a real app, use a modal
   const newAmount = prompt("Update current amount:", goal.currentAmount);
   if (newAmount !== null) {
     goal.currentAmount = parseFloat(newAmount);

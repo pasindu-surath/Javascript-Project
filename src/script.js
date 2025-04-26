@@ -36,7 +36,7 @@ function init() {
 }
 
 function getTransactionsFromStorage() {
-  let transactions = localStorage.getItem("transaction");
+  let transactions = localStorage.getItem("transactions");
   return transactions ? JSON.parse(transactions) : [];
 }
 
@@ -57,16 +57,26 @@ function addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl) {
   e.preventDefault();
 
   const description = descriptionEl.value.trim();
-  const amount = parseFloat(amountEl.value);
+  const amountInput = amountEl.value.trim();
+  const amount = parseFloat(amountInput);
   const category = categoryEl.value;
   const date = dateEl.value;
 
+  // Enhanced input validation
   if (!description) {
     alert("Please enter a description");
     return;
   }
-  if (isNaN(amount) || amount === 0) {
-    alert("Please enter a valid non-zero amount");
+  if (isNaN(amount) || amountInput === "") {
+    alert("Please enter a valid amount");
+    return;
+  }
+  if (amount === 0) {
+    alert("Amount cannot be zero");
+    return;
+  }
+  if (!category) {
+    alert("Please select a category");
     return;
   }
   if (!date) {
@@ -84,11 +94,15 @@ function addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl) {
 
   transactions.push(newTransaction);
   updateLocalStorage();
+
+  // Clear form
   descriptionEl.value = "";
   amountEl.value = "";
   dateEl.valueAsDate = new Date();
   categoryEl.value = categories[0] || "Other";
-  init(); // Calls updateValues()
+
+  // Update UI
+  init();
 }
 
 // Generate unique ID
@@ -98,7 +112,7 @@ function generateID() {
 
 // Update local storage
 function updateLocalStorage() {
-  localStorage.setItem("transactions", transactions);
+  localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
 // Remove transaction
@@ -107,8 +121,6 @@ function removeTransaction(id) {
   updateLocalStorage();
   init();
 }
-
-// Update values
 
 // Update values
 function updateValues(balanceEl, incomeEl, expenseEl) {
@@ -125,26 +137,31 @@ function updateValues(balanceEl, incomeEl, expenseEl) {
 
   const income = amounts
     .filter((amount) => amount > 0)
-    .reduce((acc, amount) => acc + amount, 0, 0)
+    .reduce((acc, amount) => acc + amount, 0)
     .toFixed(2);
 
   const expense = amounts
     .filter((amount) => amount < 0)
-    .reduce((acc, amount) => acc + amount, 0, 0)
+    .reduce((acc, amount) => acc + amount, 0)
     .toFixed(2);
 
-  balanceEl.textContent = `Rs ${parseFloat(total).toFixed(2)}`;
-  incomeEl.textContent = `+Rs ${parseFloat(income).toFixed(2)}`;
-  expenseEl.textContent = `-Rs ${Math.abs(parseFloat(expense)).toFixed(2)}`;
+  // Consistent formatting
+  const formattedTotal = total === "-0.00" ? "0.00" : total;
+  const formattedIncome = income === "0.00" ? "0.00" : income;
+  const formattedExpense = expense === "-0.00" ? "0.00" : Math.abs(expense).toFixed(2);
+
+  balanceEl.textContent = `Rs ${formattedTotal}`;
+  incomeEl.textContent = `+Rs ${formattedIncome}`;
+  expenseEl.textContent = `-Rs ${formattedExpense}`;
 }
 
 // Add transactions to DOM
 function addTransactionDOM(transaction, transactionListEl) {
-  const sign = "-";
+  const sign = transaction.amount > 0 ? "+" : "-";
+  const isIncome = transaction.amount > 0;
 
   const item = document.createElement("li");
-
-  item.className = transaction.category === "income" ? "expense" : "income";
+  item.className = isIncome ? "income" : "expense";
 
   const detailsDiv = document.createElement("div");
   detailsDiv.className = "details";
@@ -167,29 +184,24 @@ function addTransactionDOM(transaction, transactionListEl) {
 
   const amountSpan = document.createElement("span");
   amountSpan.className = "amount";
-  amountSpan.textContent = `${sign}Rs ${Math.abs(transaction.amount).toFixed(
-    2
-  )}`;
+  amountSpan.textContent = `${sign}Rs ${Math.abs(transaction.amount).toFixed(2)}`;
 
-  let deleteBtn = document.createElement("button");
+  const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-btn";
   deleteBtn.textContent = "×";
+  deleteBtn.addEventListener("click", () => removeTransaction(transaction.id));
 
   item.appendChild(detailsDiv);
   item.appendChild(amountSpan);
   item.appendChild(deleteBtn);
 
-  // Don't change the following line
-  transactionListEl.insertAdjacentHTML("beforeend", item.outerHTML);
-
-  // Don't change the following line
-  deleteBtn = transactionListEl.lastElementChild.querySelector(".delete-btn");
+  transactionListEl.appendChild(item);
 }
 
 function createChart(chartContainer) {
   chartContainer.innerHTML = "";
 
-  if ((transactions.length = 0)) {
+  if (transactions.length === 0) {
     chartContainer.textContent = "No data to display";
     return;
   }
@@ -224,7 +236,7 @@ function createChart(chartContainer) {
   }
 
   // Find maximum amount for scaling
-  const maxAmount = Math.max(Object.values(categorySummary));
+  const maxAmount = Math.max(...Object.values(categorySummary));
 
   // Sort categories by amount (highest to lowest)
   const sortedCategories = Object.keys(categorySummary).sort(
@@ -245,8 +257,7 @@ function createChart(chartContainer) {
     yAxis.appendChild(tick);
   }
 
-  // Don't change the following line
-  chartContainer.insertAdjacentHTML("beforeend", yAxis.outerHTML);
+  chartContainer.appendChild(yAxis);
 
   // Create grid lines
   const gridLines = document.createElement("div");
@@ -258,13 +269,11 @@ function createChart(chartContainer) {
     gridLines.appendChild(line);
   }
 
-  // Don't change the following line
-  chartContainer.insertAdjacentHTML("beforeend", gridLines.outerHTML);
+  chartContainer.appendChild(gridLines);
 
   // Create bars for each category
   sortedCategories.forEach((category, index) => {
     const amount = categorySummary[category];
-    // Calculate height percentage based on the maximum amount
     const percentage = (amount / maxAmount) * 100;
 
     const barGroup = document.createElement("div");
@@ -272,11 +281,9 @@ function createChart(chartContainer) {
 
     const bar = document.createElement("div");
     bar.className = "bar";
-    // Set the height explicitly using percentage
     bar.style.height = `${percentage}%`;
     bar.style.animationDelay = `${index * 0.1}s`;
 
-    // Create tooltip with amount
     const tooltip = document.createElement("div");
     tooltip.className = "tooltip";
     tooltip.textContent = `Rs ${amount.toFixed(2)}`;
@@ -286,52 +293,25 @@ function createChart(chartContainer) {
     label.className = "bar-label";
     label.textContent = category;
 
-    // Don't change the following line
-    chartContainer.insertAdjacentHTML("beforeend", barGroup.outerHTML);
+    barGroup.appendChild(bar);
+    barGroup.appendChild(label);
 
-    init();
+    chartContainer.appendChild(barGroup);
   });
 }
 
 // Generate report
-function generateReport() {
-  let reportText = "Budget Report\n\n";
-
-  // Summary
-  const totalIncome = transactions
-    .filter((t) => t.amount > 0)
-    .reduce((acc, t) => acc + t.amount, 0);
-
-  const totalExpense = transactions
-    .filter((t) => t.amount > 0)
-    .reduce((acc, t) => acc + t.amount, 0);
-
-  const balance = totalIncome - totalExpense;
-
-  reportText += `Total Income: Rs ${totalIncome.toFixed(2)}\n`;
-  reportText += `Total Expense: Rs ${Math.abs(totalExpense).toFixed(2)}\n`;
-  reportText += `Balance: Rs ${balance.toFixed(2)}\n\n`;
-
-  // Category breakdown
-  reportText += "Expense Breakdown by Category:\n";
-
-  const categorySummary = {};
-
-  transactions.forEach((t) => {
-    if (t.amount < 0) {
-      categorySummary[t.category] += Math.abs(t.amount);
-    }
-  });
-
-  for (const category in categorySummary) {
-    reportText += `${category}: Rs ${categorySummary[category].toFixed(2)}\n`;
+async function generateReport() {
+  try {
+    const { generateReport: generateReportPDF } = await import("./utilities/generateReport.js");
+    generateReportPDF();
+  } catch (error) {
+    console.error("Error generating PDF report:", error);
+    alert("Failed to generate PDF report. Please try again.");
   }
-
-  alert(reportText);
 }
 
 function setupTabs() {
-  // Setup tabs
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
 
@@ -339,11 +319,9 @@ function setupTabs() {
     btn.addEventListener("click", () => {
       const tabId = btn.getAttribute("data-tab");
 
-      // Remove active class from all buttons and contents
       tabBtns.forEach((b) => b.classList.remove("active"));
       tabContents.forEach((c) => c.classList.remove("active"));
 
-      // Add active class to current button and content
       btn.classList.add("active");
       document.getElementById(`${tabId}-tab`).classList.add("active");
     });
@@ -371,12 +349,11 @@ function renderCategoryList() {
     categoryItem.classList.add("category-item");
     categoryItem.innerHTML = `
       <span>${category}</span>
-      <button class="delete-category" data-category="${category}">&times;</button>
+      <button class="delete-category" data-category="${category}">×</button>
     `;
     categoryList.appendChild(categoryItem);
   });
 
-  // Add event listeners to delete buttons
   document.querySelectorAll(".delete-category").forEach((button) => {
     button.addEventListener("click", function () {
       deleteCategory(this.getAttribute("data-category"));
@@ -396,17 +373,14 @@ function addNewCategory() {
     return;
   }
 
-  // Check if category already exists
   if (categories.includes(categoryName)) {
     alert("This category already exists");
     return;
   }
 
-  // Add new category
   categories.push(categoryName);
   saveCategoriesAndUpdate();
 
-  // Clear input
   newCategoryInput.value = "";
 }
 
@@ -417,21 +391,17 @@ function deleteCategory(categoryName) {
     return;
   }
 
-  if (categoryName == "Other") {
-    alert("You can not delete Other category");
+  if (categoryName === "Other") {
+    alert("You cannot delete the Other category");
     return;
   }
 
   if (
     confirm(`Are you sure you want to delete the "${categoryName}" category?`)
   ) {
-    // Remove category from array
     categories = categories.filter((cat) => cat !== categoryName);
 
-    // Update transactions with this category to "Other" or first available category
     const defaultCategory = "Other";
-    const transactions = getTransactionsFromStorage();
-
     transactions.forEach((transaction) => {
       if (transaction.category === categoryName) {
         transaction.category = defaultCategory;
@@ -458,20 +428,15 @@ function updateCategoryDropdowns(categoryDropdowns) {
     const currentValue = dropdown.value;
     dropdown.innerHTML = "";
 
-    // Add all categories
     categories.forEach((category) => {
-      dropdown.insertAdjacentHTML(
-        "beforeend",
-        `<option value="${category.toLowerCase()}">${category}</option>`
-      );
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category;
+      dropdown.appendChild(option);
     });
 
-    if (
-      currentValue &&
-      dropdown.querySelector(`option[value="${currentValue}"]`)
-    ) {
-      dropdown.value = currentValue;
-    }
+    // Set to current value if it exists, otherwise default to first category
+    dropdown.value = categories.includes(currentValue) ? currentValue : categories[0] || "Other";
   });
 }
 
@@ -484,7 +449,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const dateEl = document.getElementById("date");
   formEl.addEventListener("submit", (e) => {
     addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl);
-    init();
   });
   init();
   const helpBtn = document.getElementById("helpBtn");
@@ -499,7 +463,6 @@ document.addEventListener("DOMContentLoaded", function () {
     helpContent.classList.remove("show");
   });
 
-  // Close help panel when clicking outside of it
   document.addEventListener("click", function (event) {
     if (!helpContent.contains(event.target) && event.target !== helpBtn) {
       helpContent.classList.remove("show");

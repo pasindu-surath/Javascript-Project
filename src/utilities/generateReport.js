@@ -90,7 +90,7 @@ export function generateReport() {
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-  doc.text(`$${totalIncome.toFixed(2)}`, margin + 10, summaryStartY + 30);
+  doc.text(`Rs ${totalIncome.toFixed(2)}`, margin + 10, summaryStartY + 30);
 
   // Expense box
   doc.setFillColor(220, 220, 220);
@@ -111,7 +111,7 @@ export function generateReport() {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(negativeColor[0], negativeColor[1], negativeColor[2]);
   doc.text(
-    `$${Math.abs(totalExpense).toFixed(2)}`,
+    `Rs ${Math.abs(totalExpense).toFixed(2)}`,
     margin + boxWidth + 10,
     summaryStartY + 30
   );
@@ -136,7 +136,7 @@ export function generateReport() {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(balanceColor[0], balanceColor[1], balanceColor[2]);
   doc.text(
-    `$${balance.toFixed(2)}`,
+    `Rs ${balance.toFixed(2)}`,
     margin + boxWidth * 2 + 10,
     summaryStartY + 30
   );
@@ -196,7 +196,7 @@ export function generateReport() {
 
       doc.setFont("helvetica", "normal");
       doc.text(
-        `$${amount.toFixed(2)} (${percentage}%)`,
+        `Rs ${amount.toFixed(2)} (${percentage}%)`,
         pageWidth - margin - 30,
         yPos,
         { align: "right" }
@@ -283,7 +283,7 @@ export function generateReport() {
       );
       const prefix = isExpense ? "-" : "+";
       doc.text(
-        `${prefix}$${Math.abs(transaction.amount).toFixed(2)}`,
+        `${prefix}Rs ${Math.abs(transaction.amount).toFixed(2)}`,
         pageWidth - margin - 15,
         yPos,
         { align: "right" }
@@ -304,6 +304,3 @@ export function generateReport() {
   // Save the PDF
   doc.save("Budget_Report.pdf");
 }
-
-const generateReportBtn = document.getElementById("generate-report-btn");
-generateReportBtn.addEventListener("click", generateReport);
