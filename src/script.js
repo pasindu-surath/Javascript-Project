@@ -56,21 +56,40 @@ let transactions = getTransactionsFromStorage();
 function addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl) {
   e.preventDefault();
 
+  const description = descriptionEl.value.trim();
   const amount = parseFloat(amountEl.value);
-
-  const description = descriptionEl.value;
   const category = categoryEl.value;
   const date = dateEl.value;
 
+  // Validate inputs
+  if (!description) {
+    alert("Please enter a description");
+    return;
+  }
+  if (isNaN(amount) || amount === 0) {
+    alert("Please enter a valid non-zero amount");
+    return;
+  }
+  if (!date) {
+    alert("Please select a date");
+    return;
+  }
+
   const newTransaction = {
+    id: generateID(), 
     description,
     amount,
     category,
     date,
   };
 
-  transaction.push(newTransaction);
+  transactions.push(newTransaction); 
   updateLocalStorage();
+  descriptionEl.value = "";
+  amountEl.value = "";
+  dateEl.valueAsDate = new Date(); 
+  categoryEl.value = categories[0] || "Other"; 
+  init(); 
 }
 
 // Generate unique ID
